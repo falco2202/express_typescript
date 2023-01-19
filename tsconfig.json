@@ -3,10 +3,12 @@
     "sourceMap": true,
     "target": "es2017",
     "outDir": "./dist",
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "moduleResolution": "node" ,
+    "experimentalDecorators": true,
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/**.ts"
   ],
   "exclude": [
     "node_modules"
