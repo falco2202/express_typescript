@@ -22,7 +22,7 @@ class PostsController {
   }
 
   getAllPosts = (req: express.Request, res: express.Response) => {
-    postModel.find()
+    this.post.find()
       .then(posts => {
         res.send(posts)
       })
@@ -30,7 +30,7 @@ class PostsController {
 
   getPostById = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const id = req.params.id;
-    postModel.findById(id)
+    this.post.findById(id)
       .then(post => {
         if(post) 
           res.send(post);
@@ -54,13 +54,13 @@ class PostsController {
 
   deletePost = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const id = req.params.id;
+
     this.post.findByIdAndDelete(id)
       .then(successResponse => {
         if(successResponse)
           res.send(200)
-        else  
-          next(new PostNotFoundException(id))
       })
+      .catch(() => next(new PostNotFoundException(id)))
   }
 
   modifyPost = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -69,12 +69,9 @@ class PostsController {
 
     this.post.findByIdAndUpdate(id, postData, {new: true})
       .then(post => {
-        if(post){
-          res.send(post);
-        } else {
-          next(new PostNotFoundException(id));
-        }
+        res.send(post);
       })
+      .catch(() => next(new PostNotFoundException(id)))
   }
 }
 
