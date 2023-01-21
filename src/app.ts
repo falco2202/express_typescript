@@ -3,14 +3,15 @@ import * as bodyParser from 'body-parser';
 import * as mongoose from 'mongoose';
 import helmet from 'helmet';
 import * as morgan from 'morgan'
+import * as cookieParser from 'cookie-parser';
 
-import { Controler } from 'interfaces/controller.interface';
+import Controller from 'interfaces/controller.interface';
 import errorMiddleware from './middlewares/error.middleware';
 
 export class App {
   public app: express.Application;
 
-  constructor(controllers: Controler[]) {
+  constructor(controllers: Controller[]) {
     this.app = express();
 
     this.connectToTheDatabase();
@@ -22,14 +23,15 @@ export class App {
   private initializeMiddlewares() {
     this.app.use(bodyParser.json());
     this.app.use(helmet());
-    this.app.use(morgan('tiny'));
+    this.app.use(morgan('dev'));
+    this.app.use(cookieParser());
   }
 
   private initializeErrorHandling() {
     this.app.use(errorMiddleware);
   }
 
-  private initializeControllers(controllers: Controler[]) {
+  private initializeControllers(controllers: Controller[]) {
     controllers.forEach((controller) => {
       this.app.use('/', controller.router);
     });

@@ -4,6 +4,7 @@ import postModel from './post.model';
 import PostNotFoundException from '../exceptions/PostNotFoundException';
 import validationMiddleware from '../middlewares/validation.middleware';
 import { CreatePostDto } from './post.dto';
+import authMiddleware from '../middlewares/auth.middleware';
 class PostsController {
   public path = '/posts';
   public router = express.Router();
@@ -15,10 +16,12 @@ class PostsController {
 
   private intializeRoutes() {
     this.router.get(this.path, this.getAllPosts);
-    this.router.post(this.path, validationMiddleware(CreatePostDto), this.createAPost);
     this.router.get(`${this.path}/:id`, this.getPostById);
-    this.router.patch(`${this.path}/:id`, validationMiddleware(CreatePostDto, true), this.modifyPost);
-    this.router.delete(`${this.path}/:id`, this.deletePost);
+    this.router
+      .all(`${this.path}/*`, authMiddleware)
+      .patch(`${this.path}/:id`, validationMiddleware(CreatePostDto, true), this.modifyPost)
+      .delete(`${this.path}/:id`, this.deletePost)
+      .post(this.path, authMiddleware, validationMiddleware(CreatePostDto), this.createAPost);
   }
 
   getAllPosts = (req: express.Request, res: express.Response) => {
@@ -26,21 +29,22 @@ class PostsController {
       .then(posts => {
         res.send(posts)
       })
+      .catch((err) => console.log(err))
   }
 
   getPostById = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const id = req.params.id;
     this.post.findById(id)
       .then(post => {
-        if(post) 
+        if (post)
           res.send(post);
-        else 
+        else
           next(new PostNotFoundException(id));
       })
   }
 
   createAPost = (req: express.Request, res: express.Response) => {
-    const postData : Post = req.body;
+    const postData: Post = req.body;
     const createdPost = new postModel(postData);
 
     createdPost.save()
@@ -57,7 +61,7 @@ class PostsController {
 
     this.post.findByIdAndDelete(id)
       .then(successResponse => {
-        if(successResponse)
+        if (successResponse)
           res.send(200)
       })
       .catch(() => next(new PostNotFoundException(id)))
@@ -67,7 +71,7 @@ class PostsController {
     const id = req.params.id;
     const postData: Post = req.body;
 
-    this.post.findByIdAndUpdate(id, postData, {new: true})
+    this.post.findByIdAndUpdate(id, postData, { new: true })
       .then(post => {
         res.send(post);
       })
